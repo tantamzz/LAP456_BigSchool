@@ -1,0 +1,106 @@
+﻿@model BigSchool.ViewModels.CoursesViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+<div class="row">
+    <ul class="course">
+        @foreach (var course in Model.UpcommingCourses)
+        {
+            <li>
+                <div class="date">
+                    <div class="month">
+                        @course.DateTime.ToString("MM")
+                    </div>
+                    <div class="day">
+                        @course.DateTime.ToString("dd")
+                    </div>
+                </div>
+                <div class="details">
+                    <span class="lecturer">
+                        @course.Lecturer.Name
+                        @if (Model.ShowAction)
+                        {
+                            var alreadyFollowing = false;
+                            foreach (var item2 in ViewBag.following)
+                            {
+                                if (course.LecturerId == item2.Id)
+                                {
+                                    alreadyFollowing = true;
+                                }
+                            }
+                            <button class="btn btn-default btn-sm js-toggle-follow" data-user-id="@course.LecturerId">
+                                @if (alreadyFollowing)
+                                {
+                                    <p style="color:red">Follow</p>
+                                }
+                                else
+                                {
+                                    <p>Follow</p>
+                                }
+
+                            </button>
+                        }
+
+                    </span>
+                    <span class="category">
+                        @course.Category.Name
+                    </span>
+                    @if (Model.ShowAction)
+                    {
+                        var alreadyRegister = false;
+                        foreach (var item2 in ViewBag.couresese)
+                        {
+                            if (course.LecturerId == item2.LecturerId && course.Id == item2.Id)
+                            {
+                                alreadyRegister = true;
+                            }
+                        }
+                        <button data-course-id="@course.Id" class="btn btn-default btn-sm js-toggle-attendance">
+                            @if (alreadyRegister)
+                            {
+                                <p style="color:red">Going ?</p>
+                            }
+                            else
+                            {
+                                <p>Going ?</p>
+                            }
+
+                        </button>
+
+                    }
+
+                </div>
+
+            </li>
+        }
+    </ul>
+</div>
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $(".js-toggle-attendance").click(function (e) {
+                var button = $(e.target);
+                $.post("/api/attendances", { courseId: button.attr("data-course-id") })
+                    .done(function () {
+                        button.removeClass("btn-default")
+                            .addClass("btn-info")
+                            .text("Going")
+                    })
+                    .fail(function (e) {
+                        alert(e.responseText)
+                    })
+            });
+
+            $(".js-toggle-follow").click(function (e) {
+                var button = $(e.target);
+                $.post("/api/followings", { followeeId: button.attr("data-user-id") })
+                    .done(function () {
+                        button.text("Following");
+                    })
+                    .fail(function (e) {
+                        alert(e.responseText)
+                    })
+            });
+        });
+    </script>
+}
